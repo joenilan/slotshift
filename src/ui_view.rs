@@ -4,7 +4,7 @@ use crate::{
 };
 use gpui_kit::base::Selectable;
 use gpui_kit::component::{
-    Disableable, IconName, Sizable, TitleBar,
+    Disableable, Icon, IconName, Sizable, TitleBar,
     button::{Button, ButtonVariants},
     input::Input,
     switch::Switch,
@@ -16,6 +16,9 @@ use slotshift::{
     model::Account,
 };
 use std::path::Path;
+
+const TRASH_ICON: &[u8] = br#"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 6h18'/><path d='M8 6V4h8v2'/><path d='m19 6-1 14H6L5 6'/><path d='M10 11v5'/><path d='M14 11v5'/></svg>"#;
+
 impl Launcher {
     fn sidebar(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let needle = self.search.read(cx).value().to_lowercase();
@@ -109,17 +112,44 @@ impl Launcher {
                 .when(selected, |d| {
                     d.child(div().w(px(5.)).h(px(5.)).rounded_full().bg(rgb(p::ACCENT)))
                 });
+            let remove_id = id.clone();
             rows = rows.child(
-                Button::new(("account", index))
-                    .ghost()
-                    .selected(selected)
+                div()
                     .w_full()
-                    .h(px(82.))
-                    .px_3()
-                    .accessibility_label(format!("Select {}", account.name))
-                    .child(row)
-                    .on_click(
-                        cx.listener(move |this, _, window, cx| this.select(id.clone(), window, cx)),
+                    .flex()
+                    .items_center()
+                    .gap_1()
+                    .child(
+                        Button::new(("account", index))
+                            .ghost()
+                            .selected(selected)
+                            .flex_1()
+                            .min_w_0()
+                            .h(px(82.))
+                            .px_3()
+                            .accessibility_label(format!("Select {}", account.name))
+                            .child(row)
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                this.select(id.clone(), window, cx)
+                            })),
+                    )
+                    .child(
+                        Button::new(("remove-account-row", index))
+                            .ghost()
+                            .w(px(32.))
+                            .h(px(32.))
+                            .p_0()
+                            .accessibility_label(format!("Remove {}", account.name))
+                            .tooltip("Remove account from Slotshift")
+                            .child(
+                                Icon::default()
+                                    .data(TRASH_ICON)
+                                    .size(px(15.))
+                                    .text_color(rgb(p::MUTED)),
+                            )
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                this.remove_account(remove_id.clone(), window, cx)
+                            })),
                     ),
             );
         }
@@ -340,6 +370,7 @@ impl Launcher {
                 .child(div().flex().gap_2().child(Button::new("select-cli").outline().label("Choose executable").on_click(cx.listener(|this,_,w,cx|this.browse_cli(w,cx))))
                     .child(Button::new("auto-cli").ghost().label("Use auto-detect").on_click(cx.listener(|this,_,_,cx|this.reset_cli(cx))))));
         if let Some(account) = self.settings.current() {
+            let remove_id = account.id.clone();
             content=content.child(div().h(px(1.)).bg(rgb(p::BORDER)))
                 .child(div().flex().flex_col().gap_3().child(p::label(format!("SELECTED ACCOUNT / {}",account.name.to_uppercase())))
                     .child(div().flex().items_center().gap_3()
@@ -355,7 +386,7 @@ impl Launcher {
                         .child(Button::new("rename-account").outline().label("Rename").on_click(cx.listener(|this,_,w,cx|this.edit_account(true,w,cx))))
                         .child(Button::new("open-home").outline().label("Open account folder").on_click(cx.listener(|this,_,_,cx|this.open_home(cx))))
                         .child(Button::new("device-login").outline().disabled(account.protect_login).label("Device sign-in").on_click(cx.listener(|this,_,w,cx|this.launch(Action::DeviceLogin,w,cx))))
-                        .child(Button::new("remove-account").ghost().label("Remove entry").on_click(cx.listener(|this,_,w,cx|this.remove_account(w,cx))))));
+                        .child(Button::new("remove-account").danger().label("Remove account").on_click(cx.listener(move |this,_,w,cx|this.remove_account(remove_id.clone(),w,cx))))));
         }
         content.child(div().h(px(1.)).bg(rgb(p::BORDER)))
             .child(div().flex().flex_col().gap_3().child(p::label("SMALL BY DESIGN"))

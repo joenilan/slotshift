@@ -393,25 +393,93 @@ impl Launcher {
                 .child(editor.clone())
         });
     }
-    pub fn remove_account(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(account) = self.settings.current().cloned() else {
+    pub fn remove_account(&mut self, id: String, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(account) = self.settings.accounts.iter().find(|a| a.id == id).cloned() else {
+            self.feedback("That account is no longer in Slotshift.", true, cx);
             return;
         };
+        let identity = self
+            .logins
+            .get(&id)
+            .map(|summary| summary.identity_label(false))
+            .unwrap_or_else(|| "Identity unavailable".into());
         let owner = cx.entity().downgrade();
-        window.open_dialog(cx,move |dialog,_,_|{
-            let owner=owner.clone();let id=account.id.clone();
-            dialog.title(format!("Remove {} from Slotshift?",account.name)).w(px(500.))
-                .child(div().flex().flex_col().gap_3()
-                    .child(palette::muted("Only the entry in this launcher is removed. Credentials, session history, worktrees, and running terminals stay untouched. You can link this home again later."))
-                    .child(div().text_xs().font_family("Cascadia Mono").child(account.home.to_string_lossy().into_owned())))
-                .footer(div().flex().justify_end().gap_2()
-                    .child(Button::new("cancel-remove").label("Keep account").on_click(|_,w,cx|w.close_dialog(cx)))
-                    .child(Button::new("confirm-remove").danger().label("Remove entry").on_click(move |_,w,cx|{
-                        let success=owner.update(cx,|this,cx|{
-                            let result=this.store.commit(&mut this.settings,|s|s.remove(&id));
-                            match result {Ok(_)=>{this.logins.remove(&id);let value=this.settings.current().map(|a|a.project.clone()).unwrap_or_default();this.project.update(cx,|i,cx|i.set_value(value,w,cx));this.feedback("Account entry removed. Its files and saved login were kept.",false,cx);true},Err(e)=>{this.feedback(e.to_string(),true,cx);false}}
-                        }).unwrap_or(false);if success{w.close_dialog(cx);}
-                    })))
+        window.open_dialog(cx, move |dialog, _, _| {
+            let owner = owner.clone();
+            let id = account.id.clone();
+            dialog
+                .title(format!("Remove {}?", account.name))
+                .w(px(500.))
+                .overlay_closable(false)
+                .child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .gap_4()
+                        .child(palette::muted(
+                            "This removes the account from Slotshift only. Its Codex login, session history, worktrees, running terminals, and account folder will not be deleted.",
+                        ))
+                        .child(
+                            div()
+                                .p_3()
+                                .rounded(px(5.))
+                                .bg(rgb(palette::SIDEBAR))
+                                .border_1()
+                                .border_color(rgb(palette::BORDER))
+                                .flex()
+                                .flex_col()
+                                .gap_1()
+                                .child(div().font_weight(FontWeight::SEMIBOLD).child(account.name.clone()))
+                                .child(div().text_sm().text_color(rgb(palette::MUTED)).child(identity.clone())),
+                        ),
+                )
+                .footer(
+                    div()
+                        .flex()
+                        .justify_end()
+                        .gap_2()
+                        .child(
+                            Button::new("cancel-remove")
+                                .label("Cancel")
+                                .on_click(|_, w, cx| w.close_dialog(cx)),
+                        )
+                        .child(
+                            Button::new("confirm-remove")
+                                .danger()
+                                .label("Remove account")
+                                .on_click(move |_, w, cx| {
+                                    let success = owner
+                                        .update(cx, |this, cx| {
+                                            let result = this.store.commit(&mut this.settings, |s| s.remove(&id));
+                                            match result {
+                                                Ok(_) => {
+                                                    this.logins.remove(&id);
+                                                    let value = this
+                                                        .settings
+                                                        .current()
+                                                        .map(|a| a.project.clone())
+                                                        .unwrap_or_default();
+                                                    this.project.update(cx, |i, cx| i.set_value(value, w, cx));
+                                                    this.feedback(
+                                                        "Account removed from Slotshift. Its login, history, and files were kept.",
+                                                        false,
+                                                        cx,
+                                                    );
+                                                    true
+                                                }
+                                                Err(e) => {
+                                                    this.feedback(e.to_string(), true, cx);
+                                                    false
+                                                }
+                                            }
+                                        })
+                                        .unwrap_or(false);
+                                    if success {
+                                        w.close_dialog(cx);
+                                    }
+                                }),
+                        ),
+                )
         });
     }
 }
