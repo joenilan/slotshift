@@ -1,0 +1,16 @@
+/target/
+/dist/
+*.local.*
+*.log
+*.zip
+*.exe
+*.pdb
+.env*
+**/auth.json
+**/settings.json
+**/history.jsonl
+**/launcher-state.json
+**/*.sqlite*
+**/sessions/
+**/.codex/
+**/.codex-accounts/
