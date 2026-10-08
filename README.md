@@ -12,7 +12,7 @@ Keep one account working while you start another. Slotshift opens the official C
 ## What it does
 
 - **Your account list, not three fixed slots.** Add accounts, rename them, search them, or link existing Codex homes. Removing an entry leaves its credentials, history, and running sessions alone.
-- **New and resumed sessions.** Work directly in the project folder you choose. Resume opens the selected account's saved-session picker across projects.
+- **New, resumed, and cross-account sessions.** Launch Codex or resume within one account; **Continue with another account** searches saved conversations across your linked Codex homes, copies the required history, and starts an independent fork under another signed-in account without logging out. The original conversation stays intact.
 - **Saved options per account.** Toggle YOLO, separate worktrees, live web search, and inline terminal scrollback. The command preview shows what a new session will receive.
 - **Local-first account separation.** Separate homes and file credentials for managed accounts. Interactive sessions use `--no-daemon`; unsupported CLI versions stop rather than silently connecting to another account's shared server.
 - **A native interface.** GPU rendering, a resizable window, keyboard-accessible controls, system folder pickers, graphite surfaces, and a restrained mint accent.
@@ -30,6 +30,22 @@ You also need the official **Codex CLI**, installed and available on your PC. Sl
 An existing default `~/.codex` home is discovered automatically. It may also be used by another Codex app, so Slotshift deliberately protects its sign-in from replacement. Manage that default login in Codex itself.
 
 The earlier `codex-accounts` PowerShell launcher's homes are linked **in place** on first startup. No authentication files, session histories, or imported account configs are copied or moved. Its selected account and project are retained, and its previous YOLO default is preserved. The old launcher can remain installed as a fallback.
+
+## Continue work with another account
+
+![Slotshift cross-account continuation picker with fictional demo sessions](docs/handoff.png)
+
+When one account reaches its usage limit, you can keep its conversation without changing logins:
+
+1. Click **Choose session** under **Continue with another account** on the main page.
+2. Search or scroll conversations from **all linked accounts** (the source account is shown beside each title).
+3. Choose the conversation and select a **different destination account** at the top.
+4. Confirm the **working folder**. It defaults to the original project, but you can browse to the original repository on `main` if the source used a temporary worktree.
+5. Click **Continue as [account]**. Codex starts a **new fork** under the selected account's own login and launch preferences.
+
+Slotshift reads local Codex's SQLite session-title index **read-only** and falls back to `session_index.jsonl`. It copies the selected session's saved JSONL history (plus paginated ancestors) into the destination account; it never copies authentication tokens, changes existing sessions, edits the source, or overwrites conflicting destination histories. This is a **fork**, not a shared live thread: subsequent messages diverge, and simultaneous agents in the same working folder can still conflict. Let the source finish its current turn before transferring. A working project folder and a signed-in destination account are required. An older or incompatible Codex history may not be transferable; the app stops with an error instead of modifying the original.
+
+Session titles and account labels remain distinct. Slotshift masks recognizable email addresses in displayed session titles, but other text in titles and project paths can be sensitive during a stream. Custom nicknames should not contain personal information. No account quotas are combined and no requests are proxied.
 
 ## Launch options
 
@@ -77,7 +93,7 @@ Core tests cover dynamic account lists, private storage, atomic persistence, leg
 
 ## Scope
 
-This is a launcher, not an embedded terminal, proxy server, remote session host, or quota dashboard. It does not transfer a running conversation between accounts or preserve a process through a PC restart. Resume restores a saved Codex conversation; it is not a running-process checkpoint.
+This is a launcher, not an embedded terminal, proxy server, remote session host, or quota dashboard. **Cross-account continuation forks locally saved history, not a live process.** It does not move active model turns, share quota, or preserve a process through a PC restart. Resume restores an account's saved Codex conversation; a cross-account fork starts a new saved conversation in the destination profile.
 
 Windows x64 is the tested release target. macOS/Linux terminal adapters and signing are not part of this alpha. The GPU framework does not make Codex's model generation faster.
 

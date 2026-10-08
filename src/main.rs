@@ -1,5 +1,6 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
 mod theme;
+mod transfer_ui;
 mod ui;
 mod ui_view;
 use gpui_kit::component::TitleBar;

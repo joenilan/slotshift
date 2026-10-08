@@ -1,4 +1,4 @@
-use crate::theme as palette;
+use crate::{theme as palette, transfer_ui::HandoffPicker};
 use gpui_kit::component::{
     WindowExt,
     button::{Button, ButtonVariants},
@@ -289,6 +289,23 @@ impl Launcher {
             Err(e) => self.feedback(e.to_string(), true, cx),
         }
     }
+    pub fn open_handoff(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let owner = cx.entity().downgrade();
+        let accounts = self.settings.accounts.clone();
+        let selected = self.settings.selected.clone();
+        let demo = self.demo;
+        let executable = self.settings.codex_executable.clone();
+        let picker = cx
+            .new(|cx| HandoffPicker::new(owner, accounts, selected, executable, demo, window, cx));
+        window.open_dialog(cx, move |dialog, _, _| {
+            dialog
+                .title("Continue across accounts")
+                .w(px(850.))
+                .overlay_closable(false)
+                .child(picker.clone())
+        });
+    }
+
     pub fn browse_project(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let paths = cx.prompt_for_paths(PathPromptOptions {
             files: false,

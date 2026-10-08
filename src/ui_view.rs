@@ -243,7 +243,7 @@ impl Launcher {
                             .justify_between()
                             .px_1()
                             .pt_2()
-                            .child(p::label("0.1.0 / ALPHA"))
+                            .child(p::label("0.2.0 / ALPHA"))
                             .child(p::label("zombie.digital")),
                     ),
             )
@@ -344,6 +344,13 @@ impl Launcher {
                     .child(div().flex().justify_between().child(p::label("PROJECT FOLDER")).child(div().text_xs().text_color(rgb(p::MUTED)).child(if options.worktree{"New sessions: separate worktree"}else{"New sessions: work in this folder"})))
                     .child(div().flex().items_center().gap_2().child(div().flex_1().min_w_0().child(Input::new(&self.project))).child(Button::new("browse-project").outline().label("Browse...").on_click(cx.listener(|this,_,w,cx|this.browse_project(w,cx)))))
                     .when(!self.settings.recent_projects.is_empty(),|d|d.child(div().flex().items_center().gap_2().child(p::label("RECENT")).child(recents))))
+                .child(div().w_full().flex().items_center().justify_between().gap_4()
+                    .p_4().bg(rgb(p::SURFACE)).border_1().border_color(rgb(p::BORDER)).rounded(px(6.))
+                    .child(div().flex_1().min_w_0().flex().flex_col().gap_1()
+                        .child(div().font_weight(FontWeight::MEDIUM).child("Continue with another account"))
+                        .child(p::muted("Browse saved Codex conversations across every linked login.")))
+                    .child(Button::new("cross-account-continue").outline().label("Choose session")
+                        .on_click(cx.listener(|this,_,w,cx|this.open_handoff(w,cx)))))
                 .child(div().flex().flex_col()
                     .child(div().flex().justify_between().pb_1().child(p::label("LAUNCH OPTIONS")).child(p::muted("Saved for this account")))
                     .child(self.option_row("yolo","YOLO mode","Skip command approvals and sandbox restrictions.",options.yolo,"--yolo",cx))

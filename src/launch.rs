@@ -161,6 +161,38 @@ impl LaunchPlan {
             yolo: account.options.yolo && action.interactive(),
         })
     }
+    /// Continue a copied thread as a new fork under the destination login.
+    /// The original thread remains available in its original account home.
+    pub fn prepare_fork(
+        account: &Account,
+        all: &[Account],
+        executable: PathBuf,
+        source_thread_id: &str,
+        source_project: &Path,
+    ) -> Result<Self> {
+        uuid::Uuid::parse_str(source_thread_id).context("Invalid source session ID.")?;
+        ensure!(
+            source_project.is_absolute() && source_project.is_dir(),
+            "The original project directory is missing."
+        );
+        let mut plan = Self::prepare(account, Action::Resume, all, executable)?;
+        let command = plan
+            .args
+            .iter()
+            .position(|arg| arg == "resume")
+            .context("Codex resume arguments were not generated.")?;
+        plan.args[command] = "fork".into();
+        ensure!(
+            plan.args.get(command + 1).is_some_and(|arg| arg == "--all"),
+            "Unexpected session picker arguments."
+        );
+        plan.args[command + 1] = source_thread_id.into();
+        plan.args
+            .extend(["-C".into(), source_project.to_string_lossy().into_owned()]);
+        plan.working_directory = source_project.to_path_buf();
+        Ok(plan)
+    }
+
     /// Environment selection occurs inside the new terminal, never in the UI or global environment.
     pub fn powershell(&self) -> String {
         let mut script = String::from(

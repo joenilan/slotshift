@@ -13,6 +13,16 @@ Validated on Windows 11 x64 on 2026-10-07, using Rust 1.99, GPUI Kit 0.7.1, and 
 
 The native-terminal test caught a null-versus-empty environment handling edge case. The wrapper now removes inherited API environment entries explicitly with PowerShell's process-local environment provider; the repeated terminal tests confirmed they were absent in the child CLI.
 
+## Cross-account continuation validation (2026-10-08)
+
+- **55 automated tests passed** (46 existing core tests and 9 new handoff tests). Tests cover read-only SQLite titles, indexed-title fallback, masked email display, ancestry copying, duplicate destination refusal, missing worktrees, unfinished history, source preservation, and target-account launch argument construction.
+- Rust formatting and Clippy `--all-targets --locked -- -D warnings` passed.
+- **No-network Codex CLI 0.161.0 protocol check:** a synthetic session placed into a separate temporary account home was visible via `thread/list`, readable via `thread/read`, and forked via `thread/fork` with a new ID. Another test confirmed forking a synthetic child session referencing a paginated parent; no model calls or account tokens were supplied.
+- Actual GPU-rendered GPUI demo displayed the **Continue across accounts** dialog with five fictional sessions, searchable list, target-account choices, selectable source session and working-folder override. No real account history was opened in the demo.
+- Imported session JSONL history is snapshotted with a bounded size, checked before publishing, and linked without replacing existing files. Private account settings, tokens, and the SQLite indexes are neither transferred nor modified.
+
+Live continuation with real model inference and account-specific service entitlements has **not** been verified. A saved-history fork is not the same as reattaching to an actively running process. Wait until the original session's current turn has finished before continuing.
+
 ## Not claimed by this alpha
 
 A live model response, browser reauthorization, organization-managed policy behavior, long-duration stability, and a broad GPU/driver matrix were not tested in this pass. Existing provider logins are linked in place, but cached identity labels are not live validation. macOS/Linux terminal launching and code signing are not implemented.
