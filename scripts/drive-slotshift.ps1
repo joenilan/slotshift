@@ -87,6 +87,13 @@ function Has-Control($window,[string]$name,[string]$type='ControlType.Button') {
         $_.Current.Name -eq $name -and $_.Current.ControlType.ProgrammaticName -eq $type
     })).Count -gt 0
 }
+function Await-Control($window,[string]$name,[string]$type='ControlType.Button') {
+    for($attempt=0;$attempt -lt 50;$attempt++){
+        if(Has-Control $window $name $type){return}
+        Start-Sleep -Milliseconds 150
+    }
+    throw "Timed out waiting for UI control: $(Redact $name)"
+}
 function Screenshot($window,[string]$path) {
     if([string]::IsNullOrWhiteSpace($path)){throw 'A screenshot requires -Output <absolute .png path>.'}
     if(-not[IO.Path]::IsPathRooted($path) -or [IO.Path]::GetExtension($path) -ne '.png'){
@@ -143,22 +150,25 @@ function Smoke {
     try {
         if(-not(Has-Control $w 'Rename Workbench')){throw 'Sidebar rename button missing.'}
         Click-Control $w 'Add account'
+        Await-Control $w 'e.g. Personal, Work, Side projects' 'ControlType.Edit'
         Set-Control $w 'e.g. Personal, Work, Side projects' 'QA Temporary'
         Click-Control $w 'Add account' -index -1
-        if(-not(Has-Control $w 'Select QA Temporary')){throw 'New account did not appear.'}
+        Await-Control $w 'Select QA Temporary'
         Click-Control $w 'Rename QA Temporary'
+        Await-Control $w 'e.g. Personal, Work, Side projects' 'ControlType.Edit'
         Set-Control $w 'e.g. Personal, Work, Side projects' 'QA Renamed'
         Click-Control $w 'Save name'
-        if(-not(Has-Control $w 'Select QA Renamed')){throw 'Newly added account rename did not persist.'}
+        Await-Control $w 'Select QA Renamed'
         Click-Control $w 'Rename Workbench'
+        Await-Control $w 'e.g. Personal, Work, Side projects' 'ControlType.Edit'
         Set-Control $w 'e.g. Personal, Work, Side projects' 'Workbench Targeted'
         Click-Control $w 'Save name'
-        if(-not(Has-Control $w 'Select Workbench Targeted')){throw 'Non-selected account rename failed.'}
+        Await-Control $w 'Select Workbench Targeted'
         if(-not(Has-Control $w 'Select QA Renamed')){throw 'Renaming another account unexpectedly removed the selection.'}
         Click-Control $w 'Remove QA Renamed'
-        if(-not(Has-Control $w 'Cancel')){throw 'Removal confirmation dialog missing.'}
+        Await-Control $w 'Cancel'
         Click-Control $w 'Cancel'
-        if(-not(Has-Control $w 'Select QA Renamed')){throw 'Cancel unexpectedly removed account.'}
+        Await-Control $w 'Select QA Renamed'
         if($Output){Screenshot $w $Output}
         Write-Output 'PASS: add account; rename added account; rename non-selected account; remove confirmation cancel.'
         Write-Output 'PASS: no real Codex accounts used and no model requests sent.'

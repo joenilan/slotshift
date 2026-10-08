@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([ValidatePattern('^[0-9A-Za-z][0-9A-Za-z._-]*$')][string]$Version='0.2.1-alpha.1',[switch]$SkipBuild)
+param([ValidatePattern('^[0-9A-Za-z][0-9A-Za-z._-]*$')][string]$Version='0.2.2-alpha.1',[switch]$SkipBuild)
 $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
 $cargo=Join-Path $env:USERPROFILE '.cargo\bin\cargo.exe'

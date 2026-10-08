@@ -31,6 +31,14 @@ Live continuation with real model inference and account-specific service entitle
 - Fictional screenshots demonstrate both pencil/trash icons and the rename dialog. The capture code temporarily foregrounds the targeted window and restores normal stacking to prevent partially occluded screenshots.
 - Rust formatting, tests, and strict Clippy checks passed. No real account logins or Codex model requests were made in these UI tests.
 
+## YOLO launch regression investigation (2026-10-08)
+
+- Inspected real Slotshift-launched Windows Codex CLI 0.161.0 processes: `resume` and `fork` both received the actual `--yolo` flag. Slotshift's account settings also had YOLO enabled, so the flag was not being dropped by the launcher.
+- Read only permission metadata (no conversation content) from local Codex rollouts. Some managed sessions recorded `approval_policy=on-request` and `sandbox_policy.type=workspace-write`, despite earlier YOLO turns recording `never` and `danger-full-access`.
+- Existing managed account `config.toml` files default to `on-request`/`workspace-write`. A disposable `CODEX_HOME` with Codex's own app-server `config/read` confirmed that process-only `-c approval_policy=\"never\" -c sandbox_mode=\"danger-full-access\"` overrides changed effective defaults to `never`/`danger-full-access` without touching user credentials or live sessions.
+- The installed CLI accepted the amended resume/fork flag combinations in help-only checks. Rust tests assert YOLO and both explicit config overrides on new/resume/fork, while login/status never inherit execution permissions.
+- Codex issue https://github.com/openai/codex/issues/49088 documents the reconnect regression addressed by this defensive override. Windows UAC and plugin/MCP approvals are separate; they are not bypassed by YOLO and are not tested as part of this mitigation.
+
 ## Not claimed by this alpha
 
 A live model response, browser reauthorization, organization-managed policy behavior, long-duration stability, and a broad GPU/driver matrix were not tested in this pass. Existing provider logins are linked in place, but cached identity labels are not live validation. macOS/Linux terminal launching and code signing are not implemented.

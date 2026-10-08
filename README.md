@@ -55,12 +55,14 @@ Session titles and account labels remain distinct. Slotshift masks recognizable 
 
 | Option | On | Off |
 |---|---|---|
-| YOLO | Adds `--yolo`; skips command approvals and sandboxing. | Explicitly uses `--sandbox workspace-write --ask-for-approval on-request`. |
+| YOLO | Adds `--yolo` **plus startup-only** `-c approval_policy=\"never\"` and `-c sandbox_mode=\"danger-full-access\"` so the Codex process also has explicit no-approval/full-access fallback defaults after a reconnect. | Explicitly uses `--sandbox workspace-write --ask-for-approval on-request`. |
 | Separate worktree | Adds `--worktree` for a **new** session. | Uses your selected folder and its current branch. |
 | Live web search | Adds `--search`. | Does not add the live-search override; Codex's own configuration still applies. |
 | Keep terminal scrollback | Adds `--no-alt-screen`. | Does not override the default terminal screen behavior. |
 
-Fresh accounts start with **YOLO off** and **worktrees off**. Options affect the next launch or resume, not already-running sessions. Project trust is separate from command approvals, so a trusted-folder prompt can still appear with YOLO enabled. Resume retains the session's original project; it does not move old worktree sessions into another folder.
+Fresh accounts start with **YOLO off** and **worktrees off**. Options affect the next launch or resume, not already-running sessions. YOLO is dangerous on a host containing private files; only enable it when you trust the repository and agent. Resume retains the session's original project; it does not move old worktree sessions into another folder.
+
+**Why does YOLO still ask for permission?** Some Codex versions can revert to `workspace-write` after a cold reconnect (see [Codex issue #49088](https://github.com/openai/codex/issues/49088)). Slotshift 0.2.2 adds **process-local configuration overrides** for both approval and sandbox settings when YOLO is enabled; existing account `config.toml` files remain unchanged. Relaunch or resume from the updated Slotshift to apply the fix to a new CLI process. In the Codex terminal, use `/status` to inspect effective permissions; if available, `/permissions` lets you choose **Full Access** for the current session. Windows UAC, project-folder trust and separate plugin/MCP approval dialogs are **not** Codex command-sandbox approvals and may still ask for confirmation.
 
 Agents working in the same project folder share editable files. Slotshift does not switch branches, merge their changes, or coordinate concurrent Git operations.
 

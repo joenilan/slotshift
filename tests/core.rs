@@ -320,6 +320,16 @@ fn all_launch_options_and_account_types_form_correct_arguments() {
                 let args = launch::arguments(&a, action);
                 assert!(args.contains(&"--no-daemon".into()));
                 assert_eq!(args.contains(&"--yolo".into()), a.options.yolo);
+                // Do not trust old saved config.toml defaults during a YOLO
+                // reconnect: both config values must accompany the CLI flag.
+                assert_eq!(
+                    args.contains(&"approval_policy=\"never\"".into()),
+                    a.options.yolo
+                );
+                assert_eq!(
+                    args.contains(&"sandbox_mode=\"danger-full-access\"".into()),
+                    a.options.yolo
+                );
                 assert_eq!(args.contains(&"workspace-write".into()), !a.options.yolo);
                 assert_eq!(args.contains(&"on-request".into()), !a.options.yolo);
                 assert_eq!(
@@ -371,6 +381,8 @@ fn login_and_status_do_not_receive_execution_permissions() {
             assert!(!args.contains(&bad.into()));
         }
         assert!(args.contains(&"login".into()));
+        assert!(!args.contains(&"approval_policy=\"never\"".into()));
+        assert!(!args.contains(&"sandbox_mode=\"danger-full-access\"".into()));
     }
 }
 #[test]

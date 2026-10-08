@@ -224,5 +224,15 @@ fn fork_plan_uses_destination_login_and_source_project() {
     assert!(plan.args.iter().any(|arg| arg == "fork"));
     assert!(plan.args.iter().any(|arg| arg == &id));
     assert!(plan.args.iter().any(|arg| arg == "--yolo"));
+    assert!(
+        plan.args
+            .iter()
+            .any(|arg| arg == "approval_policy=\"never\"")
+    );
+    assert!(
+        plan.args
+            .iter()
+            .any(|arg| arg == "sandbox_mode=\"danger-full-access\"")
+    );
     assert!(!plan.args.iter().any(|arg| arg == "--worktree"));
 }

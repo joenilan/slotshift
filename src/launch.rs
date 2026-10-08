@@ -57,7 +57,20 @@ pub fn arguments(account: &Account, action: Action) -> Vec<String> {
             args.extend(["resume", "--all"].map(str::to_string));
         }
         if account.options.yolo {
-            args.push("--yolo".into());
+            // Codex 0.158-0.161 may fall back to the account's persisted
+            // workspace-write/on-request config after a cold TUI reconnect.
+            // Override both startup config defaults as well as selecting YOLO;
+            // do not rewrite config.toml or change unrelated Codex sessions.
+            args.extend(
+                [
+                    "-c",
+                    "approval_policy=\"never\"",
+                    "-c",
+                    "sandbox_mode=\"danger-full-access\"",
+                    "--yolo",
+                ]
+                .map(str::to_string),
+            );
         } else {
             args.extend(
                 [
