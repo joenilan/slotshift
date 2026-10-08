@@ -10,4 +10,6 @@ Login identity text is masked by default. Reveal is temporary and limited to the
 
 Do not attach credentials, account databases, full session histories, or unredacted screenshots to issues. For a suspected vulnerability, use GitHub's private vulnerability reporting when available; otherwise open a minimal issue asking for a private reporting channel without publishing exploit details or sensitive data.
 
+The optional local UI Automation driver (`scripts/drive-slotshift.ps1`) runs only when invoked. It opens no network ports, has no unattended background listener, defaults to disposable demo instances, and rejects live access without `-AllowLive`. Actions that could alter accounts or launch sessions need `-AllowSensitiveActions` too. UI automation has the same Windows desktop permissions as its caller; treat scripts and access permissions accordingly. Live screenshots might expose user-customized labels, project folders, or voluntarily revealed identities.
+
 The alpha binary is unsigned. Check the release checksum. Do not disable Windows security protections to run it.

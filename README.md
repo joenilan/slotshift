@@ -11,7 +11,7 @@ Keep one account working while you start another. Slotshift opens the official C
 
 ## What it does
 
-- **Your account list, not three fixed slots.** Add accounts, rename them, search them, or link existing Codex homes. Removing an entry leaves its credentials, history, and running sessions alone.
+- **Your account list, not three fixed slots.** Add accounts, search them, or link existing Codex homes. Click the **pencil icon beside any account** to rename its label, or the trash icon to remove its launcher entry with confirmation. Credentials, history, and running sessions remain untouched.
 - **New, resumed, and cross-account sessions.** Launch Codex or resume within one account; **Continue with another account** searches saved conversations across your linked Codex homes, copies the required history, and starts an independent fork under another signed-in account without logging out. The original conversation stays intact.
 - **Saved options per account.** Toggle YOLO, separate worktrees, live web search, and inline terminal scrollback. The command preview shows what a new session will receive.
 - **Local-first account separation.** Separate homes and file credentials for managed accounts. Interactive sessions use `--no-daemon`; unsupported CLI versions stop rather than silently connecting to another account's shared server.
@@ -26,6 +26,10 @@ You also need the official **Codex CLI**, installed and available on your PC. Sl
 1. Click **Add account**, give it a label, and create a new private account home. Alternatively, enable **Link an existing Codex home** to reuse a folder that already contains `config.toml` or `auth.json`.
 2. Click **Sign in**. Complete Codex's official browser authorization using the intended account. Finish one sign-in before starting another. **Device sign-in** in Settings is a fallback when supported by your account.
 3. Choose the project folder, set your options, then **Launch session**. Select another account and repeat. Closing Slotshift does not close the terminals it opened.
+
+**Renaming an account:** Click its pencil icon in the left sidebar, enter the new name, then choose **Save name**. You can also select it and choose **Rename** in the account header. This only changes Slotshift's display label, never the signed-in account or existing session files.
+
+![Rename an account using the pencil icon, shown with fictional demo accounts](docs/rename.png)
 
 An existing default `~/.codex` home is discovered automatically. It may also be used by another Codex app, so Slotshift deliberately protects its sign-in from replacement. Manage that default login in Codex itself.
 
@@ -90,6 +94,16 @@ cargo +stable clippy --all-targets --locked -- -D warnings
 `--demo` opens a temporary workspace with fictional account labels and **disables real Codex launches**. It is useful for screenshots. `--data-dir <absolute-folder>` uses a separate settings directory and disables automatic discovery of your existing accounts, which is useful for isolated testing.
 
 Core tests cover dynamic account lists, private storage, atomic persistence, legacy migration, credential-safe removal, duplicate identities, command construction, YOLO on/off behavior, Unicode, and PowerShell escaping. The mock CLI in `tests/fixtures` never calls a model or provider. See [validation](docs/VALIDATION.md) for the alpha's actual test scope.
+
+## Local driving and debugging
+
+The source repository and Windows ZIP include a [local UI Automation driver](docs/DRIVING_AND_DEBUGGING.md). It can inspect UI controls, click buttons, enter text, wait for changes, save screenshots, and report process responsiveness. The built-in smoke test launches a disposable **fictional demo**, adds an account, renames it, renames another account, and cancels removal:
+
+```powershell
+.\scripts\drive-slotshift.ps1 -Action smoke
+```
+
+The release ZIP places `drive-slotshift.ps1` beside `slotshift.exe` rather than in a `scripts` folder. Run the script from that location. The driver has no permanent listener or network bridge. Access to a running real Slotshift instance requires an explicit PID and `-AllowLive`; higher-impact clicks also require `-AllowSensitiveActions`. No tokens are read or included in debug output.
 
 ## Scope
 

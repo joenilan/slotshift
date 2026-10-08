@@ -18,6 +18,7 @@ use slotshift::{
 use std::path::Path;
 
 const TRASH_ICON: &[u8] = br#"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 6h18'/><path d='M8 6V4h8v2'/><path d='m19 6-1 14H6L5 6'/><path d='M10 11v5'/><path d='M14 11v5'/></svg>"#;
+const PENCIL_ICON: &[u8] = br#"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 20h9'/><path d='M16 4 20 8'/><path d='M18.5 5.5 7 17l-4 1 1-4L15.5 2.5a2.1 2.1 0 0 1 3 3Z'/></svg>"#;
 
 impl Launcher {
     fn sidebar(&self, cx: &mut Context<Self>) -> impl IntoElement {
@@ -112,6 +113,7 @@ impl Launcher {
                 .when(selected, |d| {
                     d.child(div().w(px(5.)).h(px(5.)).rounded_full().bg(rgb(p::ACCENT)))
                 });
+            let rename_id = id.clone();
             let remove_id = id.clone();
             rows = rows.child(
                 div()
@@ -131,6 +133,24 @@ impl Launcher {
                             .child(row)
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 this.select(id.clone(), window, cx)
+                            })),
+                    )
+                    .child(
+                        Button::new(("rename-account-row", index))
+                            .ghost()
+                            .w(px(30.))
+                            .h(px(32.))
+                            .p_0()
+                            .accessibility_label(format!("Rename {}", account.name))
+                            .tooltip("Rename account")
+                            .child(
+                                Icon::default()
+                                    .data(PENCIL_ICON)
+                                    .size(px(15.))
+                                    .text_color(rgb(p::MUTED)),
+                            )
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                this.rename_account(rename_id.clone(), window, cx)
                             })),
                     )
                     .child(
@@ -165,7 +185,7 @@ impl Launcher {
             );
         }
         div()
-            .w(px(250.))
+            .w(px(286.))
             .h_full()
             .flex_shrink_0()
             .bg(rgb(p::SIDEBAR))
@@ -243,7 +263,7 @@ impl Launcher {
                             .justify_between()
                             .px_1()
                             .pt_2()
-                            .child(p::label("0.2.0 / ALPHA"))
+                            .child(p::label("0.2.1 / ALPHA"))
                             .child(p::label("zombie.digital")),
                     ),
             )
@@ -337,6 +357,8 @@ impl Launcher {
                                 .tooltip("Show this login identity for 15 seconds. Sidebar identities stay masked.")
                                 .on_click(cx.listener(|this,_,_,cx|this.toggle_identity(cx))))))))
                 .child(div().flex().items_center().gap_2().pt_1()
+                    .child(Button::new("rename-selected").ghost().small().label("Rename")
+                        .on_click(cx.listener(|this,_,w,cx|this.edit_account(true,w,cx))))
                     .child(Button::new("login-status").ghost().small().label("Check login").on_click(cx.listener(|this,_,w,cx|this.launch(Action::Status,w,cx))))
                     .when(!account.protect_login,|d|d.child(Button::new("sign-in").outline().small().label(sign_label).on_click(cx.listener(|this,_,w,cx|this.launch(Action::Login,w,cx)))))))
             .child(div().id("launch-scroll").flex_1().min_h_0().overflow_y_scroll().px_7().pb_5().flex().flex_col().gap_5()

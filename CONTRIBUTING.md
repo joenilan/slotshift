@@ -8,6 +8,8 @@ Use stable Rust, Visual Studio C++ tools, and a Windows SDK. Run `cargo fmt --al
 
 Use `slotshift --demo` for visual changes. Demo identities are fictional and model launches are disabled. Use `--data-dir <empty-absolute-folder>` for isolated functional tests. Never use real account homes in automated tests or publish screenshots with revealed login identities.
 
+Run `powershell -NoProfile -File scripts/drive-slotshift.ps1 -Action smoke` to exercise the actual GPUI controls and rename workflow without real accounts. The [driving and debugging guide](docs/DRIVING_AND_DEBUGGING.md) documents inspect/click/set/wait/screenshot/diagnose. Live-process interaction is deliberately opt-in; do not automate real session launches, logins, or destructive actions without the user's approval.
+
 ## Boundaries to preserve
 
 - Account removal only removes launcher metadata; it must not delete logins, history, worktrees, or active terminals.

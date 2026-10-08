@@ -389,22 +389,40 @@ impl Launcher {
             }
         }
     }
-    pub fn edit_account(&mut self, rename: bool, window: &mut Window, cx: &mut Context<Self>) {
-        let account = if rename {
-            self.settings.current().cloned()
-        } else {
-            None
-        };
-        let title = if rename {
-            "Rename account"
-        } else {
-            "Add an account"
+    /// Edit exactly the account whose row was clicked, even when it is not selected.
+    pub fn rename_account(&mut self, id: String, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(account) = self.settings.accounts.iter().find(|a| a.id == id).cloned() else {
+            self.feedback(
+                "This account is no longer available. Refresh the list.",
+                true,
+                cx,
+            );
+            return;
         };
         let owner = cx.entity().downgrade();
-        let editor = cx.new(|cx| AccountEditor::new(owner, account, window, cx));
+        let editor = cx.new(|cx| AccountEditor::new(owner, Some(account), window, cx));
         window.open_dialog(cx, move |dialog, _, _| {
             dialog
-                .title(title)
+                .title("Rename account")
+                .w(px(480.))
+                .overlay_closable(false)
+                .child(editor.clone())
+        });
+    }
+    pub fn edit_account(&mut self, rename: bool, window: &mut Window, cx: &mut Context<Self>) {
+        if rename {
+            if let Some(account) = self.settings.current() {
+                self.rename_account(account.id.clone(), window, cx);
+            } else {
+                self.feedback("Select an account to rename.", true, cx);
+            }
+            return;
+        }
+        let owner = cx.entity().downgrade();
+        let editor = cx.new(|cx| AccountEditor::new(owner, None, window, cx));
+        window.open_dialog(cx, move |dialog, _, _| {
+            dialog
+                .title("Add an account")
                 .w(px(480.))
                 .overlay_closable(false)
                 .child(editor.clone())

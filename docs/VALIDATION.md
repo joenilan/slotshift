@@ -23,6 +23,14 @@ The native-terminal test caught a null-versus-empty environment handling edge ca
 
 Live continuation with real model inference and account-specific service entitlements has **not** been verified. A saved-history fork is not the same as reattaching to an actively running process. Wait until the original session's current turn has finished before continuing.
 
+## Native rename controls and on-demand UI driving (2026-10-08)
+
+- **56 Rust tests passed:** 47 core tests and 9 cross-account transfer tests. The rename test confirms a newly added account's display name can change without modifying its identifier, login, history, preferences, or the selected account.
+- The GPU-rendered GPUI application was driven through Windows UI Automation to add an account, rename it using the pencil icon, rename an account that was not selected, and open/cancel removal. The isolated demo smoke test passed.
+- The opt-in local driver supports inspect, click, set, wait, screenshot, diagnose, and a demo smoke test. Read-only live diagnostics confirmed the original installation was responsive without changing account data. Live access requires `-AllowLive`; higher-impact clicks also require `-AllowSensitiveActions`.
+- Fictional screenshots demonstrate both pencil/trash icons and the rename dialog. The capture code temporarily foregrounds the targeted window and restores normal stacking to prevent partially occluded screenshots.
+- Rust formatting, tests, and strict Clippy checks passed. No real account logins or Codex model requests were made in these UI tests.
+
 ## Not claimed by this alpha
 
 A live model response, browser reauthorization, organization-managed policy behavior, long-duration stability, and a broad GPU/driver matrix were not tested in this pass. Existing provider logins are linked in place, but cached identity labels are not live validation. macOS/Linux terminal launching and code signing are not implemented.

@@ -604,3 +604,34 @@ fn unrelated_data_folder_is_not_taken_over() {
         "keep this"
     );
 }
+#[test]
+fn renaming_added_account_preserves_login_history_and_current_selection() {
+    let (_tmp, store, mut state) = store();
+    store.add_account(&mut state, "Account A", None).unwrap();
+    let a = state.current().unwrap().clone();
+    store.add_account(&mut state, "Account B", None).unwrap();
+    let selected_before = state.selected.clone();
+    fake_login(&a, "fixture-login");
+    let history = a.home.join("history.jsonl");
+    fs::write(&history, "saved conversation").unwrap();
+    let auth_before = fs::read(a.home.join("auth.json")).unwrap();
+    let history_before = fs::read(&history).unwrap();
+    store
+        .commit(&mut state, |s| {
+            let target = s.accounts.iter_mut().find(|item| item.id == a.id).unwrap();
+            target.name = validate_name(" Work & Play ")?;
+            Ok(())
+        })
+        .unwrap();
+    let after = state.accounts.iter().find(|item| item.id == a.id).unwrap();
+    assert_eq!(after.name, "Work & Play");
+    assert_eq!(after.id, a.id);
+    assert_eq!(after.home, a.home);
+    assert_eq!(after.credentials, a.credentials);
+    assert_eq!(after.options, a.options);
+    assert_eq!(state.selected, selected_before);
+    assert_eq!(fs::read(a.home.join("auth.json")).unwrap(), auth_before);
+    assert_eq!(fs::read(history).unwrap(), history_before);
+    let settings_json = fs::read_to_string(store.root().join("settings.json")).unwrap();
+    assert!(settings_json.contains("Work & Play"));
+}

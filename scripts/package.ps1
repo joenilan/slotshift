@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([ValidatePattern('^[0-9A-Za-z][0-9A-Za-z._-]*$')][string]$Version='0.2.0-alpha.1',[switch]$SkipBuild)
+param([ValidatePattern('^[0-9A-Za-z][0-9A-Za-z._-]*$')][string]$Version='0.2.1-alpha.1',[switch]$SkipBuild)
 $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
 $cargo=Join-Path $env:USERPROFILE '.cargo\bin\cargo.exe'
@@ -15,7 +15,7 @@ try {
  [void][IO.Directory]::CreateDirectory($stage)
  try {
   $files=@()
-  foreach($source in @($exe,$notices,(Join-Path $root 'README.md'),(Join-Path $root 'LICENSE'),(Join-Path $root 'THIRD_PARTY_NOTICES.md'),(Join-Path $root 'SECURITY.md'))){
+  foreach($source in @($exe,$notices,(Join-Path $root 'README.md'),(Join-Path $root 'LICENSE'),(Join-Path $root 'THIRD_PARTY_NOTICES.md'),(Join-Path $root 'SECURITY.md'),(Join-Path $root 'scripts\drive-slotshift.ps1'),(Join-Path $root 'docs\DRIVING_AND_DEBUGGING.md'))){
    $destination=Join-Path $stage ([IO.Path]::GetFileName($source));Copy-Item -LiteralPath $source -Destination $destination;$files+=$destination
   }
   $name='Slotshift-v'+$Version+'-windows-x64.zip';$zip=Join-Path $root ('dist\'+$name)
